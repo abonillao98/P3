@@ -67,9 +67,10 @@ namespace upc {
     /// \FET Hemos implementado un primer criterio simple de sonoro/sordo en unvoiced()
     /// Criterio basado en potencia (pot), autocorrelación en lag=1 (r1norm) y máximo (rmaxnorm)
 
-    const float POT_THRESHOLD = 10.0F;     // Antes 20.0 -> ahora 10.0 (más permisivo)
+    const float POT_THRESHOLD = 10.0F;     // Antes 20.0 -> ahora 10.0
     const float R1NORM_THRESHOLD = 0.4F;    // Antes 0.6 -> ahora 0.4
     const float RMAXNORM_THRESHOLD = 0.6F;  // Antes 0.8 -> ahora 0.6
+    // Con los valores anteriores recibiamos un 0% de resultados
 
     // Criterio flexible:
     // - Si potencia baja -> probablemente sordo
@@ -84,7 +85,7 @@ namespace upc {
 
     // Decisión:
     // Si al menos 2 de las 3 condiciones se cumplen → voiced (sonoro)
-    // Si menos de 2 → unvoiced (sordo)
+    // Si menos de 2 -> unvoiced (sordo)
     return (passed < 2);
 }
 
@@ -110,7 +111,7 @@ namespace upc {
 	///    - The lag corresponding to the maximum value of the pitch.
     ///	   .
 	/// In either case, the lag should not exceed that of the minimum value of the pitch.
-      /// \FET Hemos implementado la búsqueda del lag máximo usando iteradores en compute_pitch()
+      /// \FET Hemos implementado la búsqueda del lag máximo usando iteradores
       vector<float>::const_iterator iRStart = r.begin() + npitch_min;
       vector<float>::const_iterator iREnd = r.end();
       
