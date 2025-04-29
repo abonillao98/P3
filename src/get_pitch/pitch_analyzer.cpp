@@ -9,19 +9,28 @@ using namespace std;
 /// Name space of UPC
 namespace upc {
   void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
-
-    for (unsigned int l = 0; l < r.size(); ++l) {
-  		/// \TODO Compute the autocorrelation r[l] 
+    /// \TODO Compute the autocorrelation r[l] 
       /// Para cada TODO en el codigo, añadir comando
       /// \FET Hemos hecho la autocorrelacion sesgada
       /// \f[
       /// r_{xx}[m]=\frac{1}{N} \sum_{n=0}^{N-m} x[n] x[n+m]
       /// \f]
+    
+    unsigned int N = x.size();  // Número de muestras en la ventana
+    
+    for (unsigned int l = 0; l < r.size(); ++l) {
+        float sum = 0.0F;
+        
+        for (unsigned int n = 0; n < N - l; ++n) {
+            sum += x[n] * x[n + l];
+        }
+        
+        r[l] = sum / (float)N;  // Dividimos por N para autocorrelación sesgada
     }
 
-    if (r[0] == 0.0F) //to avoid log() and divide zero 
-      r[0] = 1e-10; 
-  }
+    if (r[0] == 0.0F) // Para evitar problemas con divisiones por cero o log()
+        r[0] = 1e-10;
+}
 
   void PitchAnalyzer::set_window(Window win_type) {
     if (frameLen == 0)
@@ -55,8 +64,29 @@ namespace upc {
     /// \TODO Implement a rule to decide whether the sound is voiced or not.
     /// * You can use the standard features (pot, r1norm, rmaxnorm),
     ///   or compute and use other ones.
-    return true;
-  }
+    /// \FET Hemos implementado un primer criterio simple de sonoro/sordo en unvoiced()
+    /// Criterio basado en potencia (pot), autocorrelación en lag=1 (r1norm) y máximo (rmaxnorm)
+
+    const float POT_THRESHOLD = 10.0F;     // Antes 20.0 -> ahora 10.0 (más permisivo)
+    const float R1NORM_THRESHOLD = 0.4F;    // Antes 0.6 -> ahora 0.4
+    const float RMAXNORM_THRESHOLD = 0.6F;  // Antes 0.8 -> ahora 0.6
+
+    // Criterio flexible:
+    // - Si potencia baja -> probablemente sordo
+    // - Si rmaxnorm bajo -> probablemente ruido
+    // - Permitimos que r1norm sea más bajo que antes
+
+    int passed = 0;
+
+    if (pot > POT_THRESHOLD) passed++;
+    if (r1norm > R1NORM_THRESHOLD) passed++;
+    if (rmaxnorm > RMAXNORM_THRESHOLD) passed++;
+
+    // Decisión:
+    // Si al menos 2 de las 3 condiciones se cumplen → voiced (sonoro)
+    // Si menos de 2 → unvoiced (sordo)
+    return (passed < 2);
+}
 
   float PitchAnalyzer::compute_pitch(vector<float> & x) const {
     if (x.size() != frameLen)
@@ -71,7 +101,7 @@ namespace upc {
     //Compute correlation
     autocorrelation(x, r);
 
-    vector<float>::const_iterator iR = r.begin(), iRMax = iR;
+    vector<float>::const_iterator iR = r.begin();
 
     /// \TODO 
 	/// Find the lag of the maximum value of the autocorrelation away from the origin.<br>
@@ -80,6 +110,11 @@ namespace upc {
 	///    - The lag corresponding to the maximum value of the pitch.
     ///	   .
 	/// In either case, the lag should not exceed that of the minimum value of the pitch.
+      /// \FET Hemos implementado la búsqueda del lag máximo usando iteradores en compute_pitch()
+      vector<float>::const_iterator iRStart = r.begin() + npitch_min;
+      vector<float>::const_iterator iREnd = r.end();
+      
+      vector<float>::const_iterator iRMax = max_element(iRStart, iREnd);
 
     unsigned int lag = iRMax - r.begin();
 
@@ -98,4 +133,6 @@ namespace upc {
     else
       return (float) samplingFreq/(float) lag;
   }
+
+  
 }
