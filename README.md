@@ -41,7 +41,7 @@ Ejercicios básicos
      unos 30 ms de un fonema sonoro y su periodo de pitch; y, en otro *subplot*, se vea con claridad la
 	 autocorrelación de la señal y la posición del primer máximo secundario.
 
-**Respuesta:** Subplot generado con el script "`subplot_sonoro.py`" ubicado en la carpeta "`src`".
+**Respuesta:** Subplot generado con el script `subplot_sonoro.py` ubicado en la carpeta `src`.
 
 ![Subplot sonoro](img/subplot_sonoro.png)
 
@@ -151,8 +151,11 @@ bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
 
 		Puede considerar, también, la conveniencia de usar la tasa de cruces por cero.
 
-	    Recuerde configurar los paneles de datos para que el desplazamiento de ventana sea el adecuado, que
-		en esta práctica es de 15 ms.
+	    Recuerde configurar los paneles de datos para que el desplazamiento de ventana sea el adecuado, que en esta práctica es de 15 ms.
+
+**Respuesta:** Subplot generado con el script `candidatos_sonoridad.py` ubicado en la carpeta `src`.
+
+![Candidatos sonoridad](img/candidatos_sonoridad.png)
 
       - Use el estimador de pitch implementado en el programa `wavesurfer` en una señal de prueba y compare
 	    su resultado con el obtenido por la mejor versión de su propio sistema.  Inserte una gráfica
@@ -160,7 +163,11 @@ bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
      
 		Aunque puede usar el propio Wavesurfer para obtener la representación, se valorará
 	 	el uso de alternativas de mayor calidad (particularmente Python).
-  
+
+**Respuesta:** Subplot generado con el script `wavesurfer-pitch_vs_get-pitch.py` ubicado en la carpeta `src`.
+
+![Comp. esimadores](img/wavesurfer-pitch_vs_get-pitch.png)
+
   * Optimice los parámetros de su sistema de estimación de pitch e inserte una tabla con las tasas de error
     y el *score* TOTAL proporcionados por `pitch_evaluate` en la evaluación de la base de datos 
 	`pitch_db/train`..
