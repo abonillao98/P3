@@ -41,6 +41,11 @@ namespace upc {
     switch (win_type) {
     case HAMMING:
       /// \TODO Implement the Hamming window
+      /// \FET Implementación de la ventana de Hamming
+    for (unsigned int n = 0; n < frameLen; ++n) {
+      window[n] = 0.54F - 0.46F * cos(2.0F * M_PI * n / (frameLen - 1));
+    }
+    
       break;
     case RECT:
     default:
@@ -60,32 +65,21 @@ namespace upc {
       npitch_max = frameLen/2;
   }
 
+  void PitchAnalyzer::set_thresholds(float pot_th, float r1_th, float rmax_th) {
+    potThreshold = pot_th;
+    r1normThreshold = r1_th;
+    rmaxnormThreshold = rmax_th;
+  }
+
   bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
-    /// \TODO Implement a rule to decide whether the sound is voiced or not.
-    /// * You can use the standard features (pot, r1norm, rmaxnorm),
-    ///   or compute and use other ones.
-    /// \FET Hemos implementado un primer criterio simple de sonoro/sordo en unvoiced()
-    /// Criterio basado en potencia (pot), autocorrelación en lag=1 (r1norm) y máximo (rmaxnorm)
-
-    const float POT_THRESHOLD = 10.0F;     // Antes 20.0 -> ahora 10.0
-    const float R1NORM_THRESHOLD = 0.4F;    // Antes 0.6 -> ahora 0.4
-    const float RMAXNORM_THRESHOLD = 0.6F;  // Antes 0.8 -> ahora 0.6
-    // Con los valores anteriores recibiamos un 0% de resultados
-
-    // Criterio flexible:
-    // - Si potencia baja -> probablemente sordo
-    // - Si rmaxnorm bajo -> probablemente ruido
-    // - Permitimos que r1norm sea más bajo que antes
+    /// \FET Hemos vinculado los thresholds a los parámetros configurables por línea de comandos
 
     int passed = 0;
 
-    if (pot > POT_THRESHOLD) passed++;
-    if (r1norm > R1NORM_THRESHOLD) passed++;
-    if (rmaxnorm > RMAXNORM_THRESHOLD) passed++;
+    if (pot > potThreshold) passed++;
+    if (r1norm > r1normThreshold) passed++;
+    if (rmaxnorm > rmaxnormThreshold) passed++;
 
-    // Decisión:
-    // Si al menos 2 de las 3 condiciones se cumplen → voiced (sonoro)
-    // Si menos de 2 -> unvoiced (sordo)
     return (passed < 2);
 }
 
@@ -104,7 +98,7 @@ namespace upc {
 
     vector<float>::const_iterator iR = r.begin();
 
-    /// \TODO 
+    /// \TODO
 	/// Find the lag of the maximum value of the autocorrelation away from the origin.<br>
 	/// Choices to set the minimum value of the lag are:
 	///    - The first negative value of the autocorrelation.
@@ -124,7 +118,7 @@ namespace upc {
     //You can print these (and other) features, look at them using wavesurfer
     //Based on that, implement a rule for unvoiced
     //change to #if 1 and compile
-#if 1
+#if 0
     if (r[0] > 0.0F)
       cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
 #endif

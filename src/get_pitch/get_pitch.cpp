@@ -27,6 +27,10 @@ Usage:
 Options:
     -h, --help  Show this screen
     --version   Show the version of the project
+    --window=<W>   Window type: RECT or HAMMING [default: RECT]
+    --pot-th=<T>   Power threshold [default: 10.0]
+    --r1-th=<T>   r1/r0 threshold [default: 0.4]
+    --rmax-th=<T>   r[lag]/r0 threshold [default: 0.6]
 
 Arguments:
     input-wav   Wave file with the audio signal
@@ -46,6 +50,10 @@ int main(int argc, const char *argv[]) {
 
 	std::string input_wav = args["<input-wav>"].asString();
 	std::string output_txt = args["<output-txt>"].asString();
+  std::string window_type = args["--window"].asString();
+  float pot_threshold = std::stof(args["--pot-th"].asString());
+  float r1_threshold = std::stof(args["--r1-th"].asString());
+  float rmax_threshold = std::stof(args["--rmax-th"].asString());
 
   // Read input sound file
   unsigned int rate;
@@ -59,7 +67,29 @@ int main(int argc, const char *argv[]) {
   int n_shift = rate * FRAME_SHIFT;
 
   // Define analyzer
-  PitchAnalyzer analyzer(n_len, rate, PitchAnalyzer::RECT, 50, 500);
+  PitchAnalyzer::Window win = (window_type == "HAMMING") ?
+    PitchAnalyzer::HAMMING : PitchAnalyzer::RECT;
+
+  //Chivato ventanas
+  #if 1
+  std::cout << "La ventana es: "
+          << (win == PitchAnalyzer::HAMMING ? "HAMMING" : "RECT")
+          << std::endl;
+  #endif
+
+  PitchAnalyzer analyzer(n_len, rate, win, 50, 500);
+
+  //Chivato threhsolds:
+  #if 1
+  std::cout << "Umbrales configurados:\n";
+    std::cout << "  POT_THRESHOLD = " << pot_threshold << '\n';
+    std::cout << "  R1NORM_THRESHOLD = " << r1_threshold << '\n';
+    std::cout << "  RMAXNORM_THRESHOLD = " << rmax_threshold << '\n';
+  #endif
+
+  analyzer.set_thresholds(pot_threshold, r1_threshold, rmax_threshold);
+  
+
 
   /// \TODO
   /// Preprocess the input signal in order to ease pitch estimation. For instance,

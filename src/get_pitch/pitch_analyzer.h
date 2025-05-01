@@ -30,6 +30,9 @@ namespace upc {
       samplingFreq, ///< sampling rate (in samples per second). Has to be set in the constructor call
       npitch_min, ///< minimum value of pitch period, in samples
       npitch_max; ///< maximum value of pitch period, in samples
+      float potThreshold = 10.0F;
+      float r1normThreshold = 0.4F;
+      float rmaxnormThreshold = 0.6F;
  
 	///
 	/// Computes correlation from lag=0 to r.size()
@@ -102,6 +105,9 @@ namespace upc {
     /// Sets pitch range: takes min_F0 and max_F0 in Hz, sets npitch_min and npitch_max in samples
 	///
     void set_f0_range(float min_F0, float max_F0);
+
+    // Se añade este metodo para establecer los thresholds del unvoiced() desde linea de comandos
+    void set_thresholds(float pot_th, float r1_th, float rmax_th);
   };
 }
 #endif

@@ -172,6 +172,22 @@ bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
     y el *score* TOTAL proporcionados por `pitch_evaluate` en la evaluación de la base de datos 
 	`pitch_db/train`..
 
+**Respuesta:** Por análisis experimental usando `scripts/run_get_pitch_grid.sh` y con los resultados almacenados en `resultados_run-grid-RECT-y-HAMMING.txt` vemos que, tal y como esta establecida la decisión de "unvoiced", lo importante son los thresholds de la autocorrelación normalizada de uno (r1norm) y del valor de la autocorrelación en su máximo secundario (rmaxnorm). Conseguimos una puntuación máxima del total de 87,23%
+
+Tabla:
+
+| Error type                  | Number of errors      | %      |
+|----------------------------|-----------------------|--------|
+| Unvoiced frames as voiced  | 396/7045              | 5.62   |
+| Voiced frames as unvoiced  | 712/4155              | 17.14  |
+| Gross voiced errors (+20%) | 26/3443               | 0.76   |
+| MSE of fine errors         |                       | 2.03   |
+| **TOTAL**                  |                       | **87.23** |
+
+Pantallazo:
+
+![Score](img/score.png)
+
 Ejercicios de ampliación
 ------------------------
 
@@ -185,8 +201,42 @@ Ejercicios de ampliación
   * Inserte un *pantallazo* en el que se vea el mensaje de ayuda del programa y un ejemplo de utilización
     con los argumentos añadidos.
 
+![options](img/get-pitch-options.png)
+
+![uso1](img/get-pitch-uso1.png)
+
+![uso2](img/get-pitch-uso2.png)
+
+![uso3](img/get-pitch-uso3.png)
+
+
 - Implemente las técnicas que considere oportunas para optimizar las prestaciones del sistema de estimación
   de pitch.
+
+**Respuesta:** Se implementa la ventana de Hamming. Pero, al evaluarla con `scripts/run_get_pitch_grid.sh`, vemos que en vez de mejorar los resultados, los empeora. Código de implementación de la ventana:
+
+```cpp
+void PitchAnalyzer::set_window(Window win_type) {
+    if (frameLen == 0)
+      return;
+
+    window.resize(frameLen);
+
+    switch (win_type) {
+    case HAMMING:
+      /// \TODO Implement the Hamming window
+      /// \FET Implementación de la ventana de Hamming
+    for (unsigned int n = 0; n < frameLen; ++n) {
+      window[n] = 0.54F - 0.46F * cos(2.0F * M_PI * n / (frameLen - 1));
+    }
+    
+      break;
+    case RECT:
+    default:
+      window.assign(frameLen, 1);
+    }
+  }
+```
 
   Entre las posibles mejoras, puede escoger una o más de las siguientes:
 
