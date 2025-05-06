@@ -11,8 +11,8 @@ GETF0="get_pitch"
 # Leer argumentos de línea de comandos
 WINDOW="${1:-RECT}"
 POTTH="${2:-10.0}"
-R1TH="${3:-0.4}"
-RMAXTH="${4:-0.6}"
+R1TH="${3:-0.5}"
+RMAXTH="${4:-0.5}"
 
 
 

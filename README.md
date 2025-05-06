@@ -188,6 +188,23 @@ Pantallazo:
 
 ![Score](img/score.png)
 
+Tras aplicar filtro de mediana, se obtiene una muy ligera mejora de resultados:
+
+Tabla:
+
+| Error type                  | Number of errors      | %      |
+|----------------------------|-----------------------|--------|
+| Unvoiced frames as voiced  | 329/7045              | 4.67   |
+| Voiced frames as unvoiced  | 701/4155              | 16.87  |
+| Gross voiced errors (+20%) | 29/3443               | 0.84   |
+| MSE of fine errors         |                       | 2.24   |
+| **TOTAL**                  |                       | **87.74** |
+
+Pantallazo:
+
+![Score2](img/score2.png)
+
+
 Ejercicios de ampliación
 ------------------------
 
@@ -241,7 +258,57 @@ void PitchAnalyzer::set_window(Window win_type) {
   Entre las posibles mejoras, puede escoger una o más de las siguientes:
 
   * Técnicas de preprocesado: filtrado paso bajo, diezmado, *center clipping*, etc.
+
+**Respuesta:** Se implementa center-clipping, pero nos hace empeorar los resultados. El código se deja comentado dentro de `get_pitch.cpp`:
+
+```cpp
+// Center clipping: recorte a largo plazo
+float max_abs = 0.0F;
+for (float v : x)
+    if (std::fabs(v) > max_abs) max_abs = fabs(v);
+
+// Umbral de clipping: 5% del máximo absoluto
+float clip_threshold = 0.05F * max_abs;
+
+// Aplicar center clipping
+for (float &v : x) {
+    if (v > clip_threshold)
+        v -= clip_threshold;
+    else if (v < -clip_threshold)
+        v += clip_threshold;
+    else
+        v = 0.0F;
+}
+```
+
   * Técnicas de postprocesado: filtro de mediana, *dynamic time warping*, etc.
+
+**Respuesta:** Se implementa filtro de mediana en `get_pitch.cpp`:
+
+```cpp
+// Postprocesado: filtro de mediana de longitud 3
+    vector<float> f0_filtered(f0.size());
+
+    for (size_t i = 0; i < f0.size(); ++i) {
+        if (i == 0 || i == f0.size() - 1) {
+            f0_filtered[i] = f0[i]; // no se filtra primer ni último
+        } else {
+            // Obtener vecindad
+            float a = f0[i - 1];
+            float b = f0[i];
+            float c = f0[i + 1];
+
+            // Calcular mediana directamente
+            if ((a <= b && b <= c) || (c <= b && b <= a)) f0_filtered[i] = b;
+            else if ((b <= a && a <= c) || (c <= a && a <= b)) f0_filtered[i] = a;
+            else f0_filtered[i] = c;
+        }
+    }
+
+    // Sustituir f0 original por la filtrada
+    f0 = f0_filtered;
+```
+
   * Métodos alternativos a la autocorrelación: procesado cepstral, *average magnitude difference function*
     (AMDF), etc.
   * Optimización **demostrable** de los parámetros que gobiernan el estimador, en concreto, de los que

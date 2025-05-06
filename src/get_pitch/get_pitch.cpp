@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string.h>
 #include <errno.h>
+#include <cmath>
 
 #include "wavfile_mono.h"
 #include "pitch_analyzer.h"
@@ -89,18 +90,58 @@ int main(int argc, const char *argv[]) {
 
   analyzer.set_thresholds(pot_threshold, r1_threshold, rmax_threshold);
   
+/*
+  // Center clipping: recorte a largo plazo
+float max_abs = 0.0F;
+for (float v : x)
+    if (std::fabs(v) > max_abs) max_abs = fabs(v);
 
+// Umbral de clipping: 30% del máximo absoluto
+float clip_threshold = 0.05F * max_abs;
+
+// Aplicar center clipping
+for (float &v : x) {
+    if (v > clip_threshold)
+        v -= clip_threshold;
+    else if (v < -clip_threshold)
+        v += clip_threshold;
+    else
+        v = 0.0F;
+}*/
 
   /// \TODO
   /// Preprocess the input signal in order to ease pitch estimation. For instance,
-  /// central-clipping or low pass filtering may be used.
-  
+  /// central-clipping or low pass filtering may be used.  
   // Iterate for each frame and save values in f0 vector
   vector<float>::iterator iX;
   vector<float> f0;
   for (iX = x.begin(); iX + n_len < x.end(); iX = iX + n_shift) {
     float f = analyzer(iX, iX + n_len);
     f0.push_back(f);
+    
+    
+    // Postprocesado: filtro de mediana de longitud 3
+    vector<float> f0_filtered(f0.size());
+
+    for (size_t i = 0; i < f0.size(); ++i) {
+        if (i == 0 || i == f0.size() - 1) {
+            f0_filtered[i] = f0[i]; // no se filtra primer ni último
+        } else {
+            // Obtener vecindad
+            float a = f0[i - 1];
+            float b = f0[i];
+            float c = f0[i + 1];
+
+            // Calcular mediana directamente
+            if ((a <= b && b <= c) || (c <= b && b <= a)) f0_filtered[i] = b;
+            else if ((b <= a && a <= c) || (c <= a && a <= b)) f0_filtered[i] = a;
+            else f0_filtered[i] = c;
+        }
+    }
+
+    // Sustituir f0 original por la filtrada
+    f0 = f0_filtered;
+    
   }
 
   /// \TODO
